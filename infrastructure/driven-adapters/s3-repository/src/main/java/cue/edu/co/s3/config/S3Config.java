@@ -4,6 +4,7 @@ import cue.edu.co.s3.config.model.S3ConnectionProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider;
 import software.amazon.awssdk.metrics.MetricPublisher;
@@ -20,7 +21,7 @@ public class S3Config {
     public S3Client s3Client(S3ConnectionProperties s3Properties, MetricPublisher publisher) {
         return S3Client.builder()
                 .overrideConfiguration(o -> o.addMetricPublisher(publisher))
-                .credentialsProvider(WebIdentityTokenFileCredentialsProvider.create())
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .region(Region.of(s3Properties.region()))
                 .build();
     }
