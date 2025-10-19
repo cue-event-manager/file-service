@@ -1,47 +1,107 @@
-# Proyecto Base Implementando Clean Architecture
+# File Service
 
-## Antes de Iniciar
+## Overview
 
-Empezaremos por explicar los diferentes componentes del proyectos y partiremos de los componentes externos, continuando con los componentes core de negocio (dominio) y por último el inicio y configuración de la aplicación.
+The **File Service** manages the storage, retrieval, and access control of files across the CUE Event Management System. It provides secure integration with Amazon S3 for file uploads, downloads, and generation of temporary access links. This service ensures consistent and centralized handling of all digital assets used by other microservices.
 
-Lee el artículo [Clean Architecture — Aislando los detalles](https://medium.com/bancolombia-tech/clean-architecture-aislando-los-detalles-4f9530f35d7a)
+---
 
-# Arquitectura
+## Purpose
 
-![Clean Architecture](https://miro.medium.com/max/1400/1*ZdlHz8B0-qu9Y-QO3AXR_w.png)
+The File Service is designed to handle all file-related operations while maintaining scalability, security, and traceability. It is responsible for:
 
-## Domain
+* Uploading and storing files in AWS S3.
+* Generating signed URLs for temporary access.
+* Managing file metadata (owner, type, size, timestamps, etc.).
+* Ensuring proper access control based on user roles and service permissions.
+* Supporting various file types (images, documents, videos, etc.).
 
-Es el módulo más interno de la arquitectura, pertenece a la capa del dominio y encapsula la lógica y reglas del negocio mediante modelos y entidades del dominio.
+This service decouples file management from other modules, allowing independent scalability and reliability.
 
-## Usecases
+---
 
-Este módulo gradle perteneciente a la capa del dominio, implementa los casos de uso del sistema, define lógica de aplicación y reacciona a las invocaciones desde el módulo de entry points, orquestando los flujos hacia el módulo de entities.
+## Versions
 
-## Infrastructure
+| Component                                   | Version |
+| ------------------------------------------- | ------- |
+| **Java**                                    | 21      |
+| **Spring Boot**                             | 3.5.4   |
+| **Gradle**                                  | 8.14.3  |
+| **Bancolombia Clean Architecture Scaffold** | 3.26.1  |
 
-### Helpers
+---
 
-En el apartado de helpers tendremos utilidades generales para los Driven Adapters y Entry Points.
+## Architecture
 
-Estas utilidades no están arraigadas a objetos concretos, se realiza el uso de generics para modelar comportamientos
-genéricos de los diferentes objetos de persistencia que puedan existir, este tipo de implementaciones se realizan
-basadas en el patrón de diseño [Unit of Work y Repository](https://medium.com/@krzychukosobudzki/repository-design-pattern-bc490b256006)
+The File Service follows the **Bancolombia Clean Architecture Scaffold**, providing a clean separation of business logic from external dependencies.
 
-Estas clases no puede existir solas y debe heredarse su compartimiento en los **Driven Adapters**
+```
+file-service/
+├── applications/             # Application entry points and configurations
+├── domain/                   # Core entities, use cases, and models
+├── infrastructure/            # Adapters for AWS S3, repositories, and controllers
+├── build.gradle               # Gradle configuration
+└── settings.gradle            # Project settings
+```
 
-### Driven Adapters
+### Layers
 
-Los driven adapter representan implementaciones externas a nuestro sistema, como lo son conexiones a servicios rest,
-soap, bases de datos, lectura de archivos planos, y en concreto cualquier origen y fuente de datos con la que debamos
-interactuar.
+* **Domain:** Defines entities such as `File`, `FileMetadata`, and `FileType`.
+* **Use Cases:** Handles operations for upload, deletion, retrieval, and signed URL generation.
+* **Infrastructure:** Contains AWS SDK integration, S3 client configuration, and REST controllers.
+* **Entry Points:** Exposes REST endpoints for other services and administrative tools.
 
-### Entry Points
+---
 
-Los entry points representan los puntos de entrada de la aplicación o el inicio de los flujos de negocio.
+## Environment Variables
 
-## Application
+Below are the required environment variables for the File Service:
 
-Este módulo es el más externo de la arquitectura, es el encargado de ensamblar los distintos módulos, resolver las dependencias y crear los beans de los casos de use (UseCases) de forma automática, inyectando en éstos instancias concretas de las dependencias declaradas. Además inicia la aplicación (es el único módulo del proyecto donde encontraremos la función “public static void main(String[] args)”.
+```bash
+# -----------------------------------
+# Server Configuration
+# -----------------------------------
+SERVER_PORT=8080
+SPRING_PROFILES_ACTIVE=dev
 
-**Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**
+# -----------------------------------
+# Database Configuration
+# -----------------------------------
+DB_URL=jdbc:mysql://mysql-file:3306/file_service?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+DB_USERNAME=file_user
+DB_PASSWORD=file_password
+
+# -----------------------------------
+# AWS S3 Configuration
+# -----------------------------------
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_S3_BUCKET_NAME=cue-event-files
+
+# -----------------------------------
+# Internal Communication
+# -----------------------------------
+INTERNAL_SECRET=your-internal-service-secret
+EUREKA_URL=http://discovery-service:8761/eureka/
+
+# -----------------------------------
+# Logging Configuration
+# -----------------------------------
+LOGGING_LEVEL_ROOT=INFO
+LOGGING_LEVEL_CO.EDU.CUE=DEBUG
+
+# -----------------------------------
+# CORS Configuration
+# -----------------------------------
+CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:3000
+```
+
+---
+
+## Security
+
+* All requests between services are validated using `INTERNAL_SECRET`.
+* File uploads are validated for allowed MIME types and size restrictions.
+* Private files are served only through **signed URLs** with limited expiration.
+* Public files (logos, images) use a separate S3 bucket with open access policies.
