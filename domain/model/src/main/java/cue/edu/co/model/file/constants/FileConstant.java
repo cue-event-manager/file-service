@@ -13,6 +13,9 @@ public class FileConstant {
 
     public static final long MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
+    public static final long MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+
+
     public static final Set<FileContentType> ALLOWED_IMAGE_TYPES = Set.of(
             FileContentType.IMAGE_JPEG, FileContentType.IMAGE_PNG, FileContentType.IMAGE_WEBP
     );
