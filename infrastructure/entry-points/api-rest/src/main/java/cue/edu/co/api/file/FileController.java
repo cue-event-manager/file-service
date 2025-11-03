@@ -5,6 +5,7 @@ import cue.edu.co.api.file.dtos.FileResponseDto;
 import cue.edu.co.api.file.mappers.FileDtoMapper;
 import cue.edu.co.model.file.File;
 import cue.edu.co.model.file.commands.UploadFileCommand;
+import cue.edu.co.usecase.file.UploadFileUseCase;
 import cue.edu.co.usecase.file.UploadImageUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,9 @@ import static cue.edu.co.api.common.constants.RequestParamConstant.REQUEST_PARAM
 @RestController
 @RequiredArgsConstructor
 public class FileController {
-
     private final UploadImageUseCase uploadImageUseCase;
+    private final UploadFileUseCase uploadFileUseCase;
+
     private final FileDtoMapper fileDtoMapper;
 
     @PostMapping(FileEndpoint.UPLOAD_IMAGE_FILE_ENDPOINT)
@@ -37,6 +39,24 @@ public class FileController {
         );
 
         File savedFile = uploadImageUseCase.execute(command);
+
+        FileResponseDto response = fileDtoMapper.toDto(savedFile);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping(FileEndpoint.UPLOAD_FILE_ENDPOINT)
+    public ResponseEntity<FileResponseDto> uploadFile(@RequestParam(REQUEST_PARAM_FILE) MultipartFile multipartFile)
+            throws IOException {
+
+        UploadFileCommand command = new UploadFileCommand(
+                multipartFile.getOriginalFilename(),
+                multipartFile.getContentType(),
+                multipartFile.getSize(),
+                multipartFile.getInputStream()
+        );
+
+        File savedFile = uploadFileUseCase.execute(command);
 
         FileResponseDto response = fileDtoMapper.toDto(savedFile);
 

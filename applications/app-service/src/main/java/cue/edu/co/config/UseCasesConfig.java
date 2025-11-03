@@ -2,6 +2,7 @@ package cue.edu.co.config;
 
 import cue.edu.co.model.file.gateways.FileRepository;
 import cue.edu.co.model.file.gateways.FileStorage;
+import cue.edu.co.usecase.file.UploadFileUseCase;
 import cue.edu.co.usecase.file.UploadImageUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,5 +20,11 @@ public class UseCasesConfig {
     public UploadImageUseCase uploadImageUseCase(FileRepository fileRepository,
                                                  FileStorage fileStorage){
         return new UploadImageUseCase(fileRepository, fileStorage);
+    }
+
+    @Bean
+    public UploadFileUseCase uploadFileUseCase(FileRepository fileRepository,
+                                                FileStorage fileStorage){
+        return new UploadFileUseCase(fileRepository, fileStorage);
     }
 }
