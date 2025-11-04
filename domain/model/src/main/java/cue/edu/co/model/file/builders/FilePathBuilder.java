@@ -8,4 +8,10 @@ public class FilePathBuilder {
         String safeExtension = extension == null || extension.isBlank() ? "" : "." + extension;
         return "images/" + uuid + safeExtension;
     }
+
+    public static String buildFilePath(String extension) {
+        String uuid = UUID.randomUUID().toString();
+        String safeExtension = extension == null || extension.isBlank() ? "" : "." + extension;
+        return "files/" + uuid + safeExtension;
+    }
 }
