@@ -26,7 +26,7 @@ public class UploadFileUseCase {
         validateFile(command);
 
         String extension = FileUtil.extractExtension(command.originalName());
-        String path = FilePathBuilder.buildImagePath(extension);
+        String path = FilePathBuilder.buildFilePath(extension);
 
         fileStorage.upload(path, command.content(), command.contentType());
 
